@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.Token;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Main
 {    
@@ -26,15 +27,19 @@ public class Main
         }
 
         String[] rules = sysYLexer.getRuleNames();
+
         for(Token token: tokens){
+            int num = token.getType()-1;
             String text = token.getText();
-            if(text.startsWith("0x")||text.startsWith("0X")){
-                text = String.valueOf(Integer.parseInt(text.substring(2), 16));
+            if(num == 33){
+                if (text.startsWith("0x") || text.startsWith("0X")) {
+                    text = String.valueOf(Integer.parseInt(text.substring(2), 16));
+                }
+                if (Pattern.matches("^0\n+",text)) {
+                    text = String.valueOf(Integer.parseInt(text.substring(1), 8));
+                }
             }
-            if(text.startsWith("0")){
-                text = String.valueOf(Integer.parseInt(text.substring(1), 8));
-            }
-            System.err.println(rules[token.getType()-1]+' '+text+" at Line "+token.getLine());
+            System.err.println(rules[num]+' '+text+" at Line "+token.getLine()+'.');
         }
 
     }
