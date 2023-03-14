@@ -4,7 +4,6 @@ import org.antlr.v4.runtime.Token;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class Main
 {    
@@ -36,12 +35,28 @@ public class Main
                     text = String.valueOf(Integer.parseInt(text.substring(2), 16));
                 }
                 if (text.startsWith("0")) {
-                    text = String.valueOf(Integer.parseInt(text.substring(1), 8));
+                    if(checkOct(text)){
+                        text = String.valueOf(Integer.parseInt(text.substring(1), 8));
+                    } else {
+                        while (text.startsWith("0")){
+                            System.err.println(rules[num]+' '+0+" at Line "+token.getLine()+'.');
+                            text = text.substring(1);
+                        }
+                    }
                 }
             }
             System.err.println(rules[num]+' '+text+" at Line "+token.getLine()+'.');
         }
 
+    }
+
+    private static boolean checkOct(String s){
+        for(char c: s.toCharArray()){
+            if(c == '8' || c == '9'){
+                return false;
+            }
+        }
+        return true;
     }
 
 }
