@@ -34,7 +34,7 @@ public class Main
             if(text.startsWith("0")){
                 text = String.valueOf(Integer.parseInt(text.substring(1), 8));
             }
-            System.out.println(rules[token.getType()-1]+' '+text+" at Line "+token.getLine());
+            System.err.println(rules[token.getType()-1]+' '+text+" at Line "+token.getLine());
         }
 
     }
