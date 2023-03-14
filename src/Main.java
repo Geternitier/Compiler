@@ -1,3 +1,8 @@
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+
+import java.io.IOException;
+
 public class Main
 {    
     public static void main(String[] args) throws IOException {
@@ -9,7 +14,9 @@ public class Main
         CharStream input = CharStreams.fromFileName(source);
         SysYLexer sysYLexer = new SysYLexer(input);
 
-
+        SysYErrorListener listener = new SysYErrorListener();
+        sysYLexer.removeErrorListeners();
+        sysYLexer.addErrorListener(listener);
     }
 
 }
