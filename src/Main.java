@@ -34,7 +34,7 @@ public class Main
                 if (text.startsWith("0x") || text.startsWith("0X")) {
                     text = String.valueOf(Integer.parseInt(text.substring(2), 16));
                 }
-                if (text.startsWith("0")) {
+                if (text.startsWith("0") && text.length() > 1) {
                     if(checkOct(text)){
                         text = String.valueOf(Integer.parseInt(text.substring(1), 8));
                     } else {
