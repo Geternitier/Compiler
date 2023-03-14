@@ -35,7 +35,7 @@ public class Main
                 if (text.startsWith("0x") || text.startsWith("0X")) {
                     text = String.valueOf(Integer.parseInt(text.substring(2), 16));
                 }
-                if (Pattern.matches("^0\n+",text)) {
+                if (text.startsWith("0")) {
                     text = String.valueOf(Integer.parseInt(text.substring(1), 8));
                 }
             }
