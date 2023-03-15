@@ -38,10 +38,11 @@ public class Main
                     if(checkOct(text)){
                         text = String.valueOf(Integer.parseInt(text.substring(1), 8));
                     } else {
-                        System.err.println(rules[num]+' '+'0'+" at Line "+token.getLine()+'.');
-                        while (text.startsWith("0") && text.length() > 1){
-                            text = text.substring(1);
-                        }
+//                        System.err.println(rules[num]+' '+'0'+" at Line "+token.getLine()+'.');
+//                        while (text.startsWith("0") && text.length() > 1){
+//                            text = text.substring(1);
+//                        }
+                        text = "0 "+text.substring(1);
                     }
                 }
             }
