@@ -31,19 +31,19 @@ public class Main
             int num = token.getType()-1;
             String text = token.getText();
             if(num == 33){
-                if (text.startsWith("0x") || text.startsWith("0X")) {
+                if (text.length() > 2 &&(text.startsWith("0x") || text.startsWith("0X"))) {
                     text = String.valueOf(Integer.parseInt(text.substring(2), 16));
                 }
                 if (text.startsWith("0") && text.length() > 1) {
-                    if(checkOct(text)){
-                        text = String.valueOf(Integer.parseInt(text.substring(1), 8));
-                    } else {
-//                        System.err.println(rules[num]+' '+'0'+" at Line "+token.getLine()+'.');
+//                    if(checkOct(text)){
+//                        text = String.valueOf(Integer.parseInt(text.substring(1), 8));
+//                    } else {
+//                        System.err.println(rules[num]+" 0 at Line "+token.getLine()+'.');
 //                        while (text.startsWith("0") && text.length() > 1){
 //                            text = text.substring(1);
 //                        }
-                        text = text.substring(1);
-                    }
+//                    }
+                    text = String.valueOf(Integer.parseInt(text.substring(1), 8));
                 }
             }
             System.err.println(rules[num]+' '+text+" at Line "+token.getLine()+'.');
