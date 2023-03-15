@@ -42,7 +42,7 @@ public class Main
 //                        while (text.startsWith("0") && text.length() > 1){
 //                            text = text.substring(1);
 //                        }
-                        text = "0 "+text.substring(1);
+                        text = text.substring(1);
                     }
                 }
             }
