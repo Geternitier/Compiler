@@ -30,13 +30,11 @@ public class Main
         for(Token token: tokens){
             int num = token.getType()-1;
             String text = token.getText();
-            if(num == 33){
-                if (text.length() > 2 &&(text.startsWith("0x") || text.startsWith("0X"))) {
-                    text = String.valueOf(Integer.parseInt(text.substring(2), 16));
-                }
-                else if (text.length() > 1 && text.startsWith("0")) {
-                    text = String.valueOf(Integer.parseInt(text.substring(1), 8));
-                }
+            if (text.length() > 2 &&(text.startsWith("0x") || text.startsWith("0X"))) {
+                text = String.valueOf(Integer.parseInt(text.substring(2), 16));
+            }
+            else if (text.length() > 1 && text.startsWith("0")) {
+                text = String.valueOf(Integer.parseInt(text.substring(1), 8));
             }
             System.err.println(rules[num]+' '+text+" at Line "+token.getLine()+'.');
         }
