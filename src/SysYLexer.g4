@@ -39,7 +39,7 @@ IDENT: (LETTER | '_') (LETTER | DIGIT | '_')* ;
 
 INTEGR_CONST: OCTAL | HEXADECIMAL | DECIMAL;
 DECIMAL: '0' | ([1-9]DIGIT*);
-OCTAL: '0' [0-7]+;
+OCTAL: '0' [1-7] [0-7]*;
 HEXADECIMAL: ('0x' | '0X') (DIGIT | [a-fA-F])+ ;
 
 WS: [ \t\r\n]+ -> skip;
