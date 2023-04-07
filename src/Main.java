@@ -44,7 +44,7 @@ public class Main {
         sysYParser.removeErrorListeners();
         sysYParser.addErrorListener(parserErrorListener);
 
-        ParseTree tree = sysYParser.program();
+        SysYParser.ProgramContext tree = sysYParser.program();
         if(parserErrorListener.listen()){
             return sysYParser;
         }
