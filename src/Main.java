@@ -50,6 +50,9 @@ public class Main {
             return sysYParser;
         }
 
+        Visitor visitor = new Visitor();
+        visitor.visit(tree);
+
         return sysYParser;
     }
 
