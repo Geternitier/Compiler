@@ -76,7 +76,7 @@ stmt
    : lVal ASSIGN exp SEMICOLON
    | (exp)? SEMICOLON
    | block
-   | IF L_PAREN cond R_PAREN stmt
+   | IF L_PAREN cond R_PAREN stmt (ELSE stmt)?
    | WHILE L_PAREN cond R_PAREN stmt
    | BREAK SEMICOLON
    | CONTINUE SEMICOLON
