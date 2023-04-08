@@ -80,20 +80,21 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
 
         if (ruleNum >= 0) {
             String ruleName = SysYLexer.ruleNames[ruleNum];
-            String tokenText = token.getText();
+            String text = token.getText();
             String color = getColor(ruleName);
 
             if (Objects.equals(ruleName, "INTEGER_CONST")) {
-                if (tokenText.startsWith("0x") || tokenText.startsWith("0X")) {
-                    tokenText = String.valueOf(Integer.parseInt(tokenText.substring(2), 16));
-                } else if (tokenText.startsWith("0")) {
-                    tokenText = String.valueOf(Integer.parseInt(tokenText, 8));
+                if (text.length() > 2 &&(text.startsWith("0x") || text.startsWith("0X"))) {
+                    text = String.valueOf(Integer.parseInt(text.substring(2), 16));
+                }
+                else if (text.length() > 1 && text.startsWith("0")) {
+                    text = String.valueOf(Integer.parseInt(text.substring(1), 8));
                 }
             }
 
             if (!Objects.equals(color, "")) {
                 printIdent();
-                System.err.println(tokenText + " " + ruleName + "[" + color + "]");
+                System.err.println(text + " " + ruleName + "[" + color + "]");
             }
         }
 
