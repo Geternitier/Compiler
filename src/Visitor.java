@@ -15,19 +15,41 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
 
     private String getColor(String ruleName){
         switch (ruleName) {
-            case "CONST", "INT", "VOID", "IF", "ELSE", "WHILE", "BREAK", "CONTINUE", "RETURN" -> {
+            case "CONST":
+            case "INT":
+            case "VOID":
+            case "IF":
+            case "ELSE":
+            case "WHILE":
+            case "BREAK":
+            case "CONTINUE":
+            case "RETURN": {
                 return "orange";
             }
-            case "PLUS", "MINUS", "MUL", "DIV", "MOD", "ASSIGN", "EQ", "NEQ", "LT", "GT", "LE", "GE", "NOT", "AND", "OR" -> {
+            case "PLUS":
+            case "MINUS":
+            case "MUL":
+            case "DIV":
+            case "MOD":
+            case "ASSIGN":
+            case "EQ":
+            case "NEQ":
+            case "LT":
+            case "GT":
+            case "LE":
+            case "GE":
+            case "NOT":
+            case "AND":
+            case "OR": {
                 return "blue";
             }
-            case "IDENT" -> {
+            case "IDENT": {
                 return "red";
             }
-            case "INTEGER_CONST" -> {
+            case "INTEGER_CONST": {
                 return "green";
             }
-            default -> {
+            default: {
                 return "";
             }
         }
