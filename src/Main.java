@@ -29,6 +29,11 @@ public class Main {
         Visitor visitor = new Visitor();
         visitor.visit(tree);
 
+        if(!visitor.isError()){
+            for (String s : visitor.getText()) {
+                System.err.print(s);
+            }
+        }
     }
 
 }

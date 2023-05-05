@@ -3,10 +3,30 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Visitor extends SysYParserBaseVisitor<Void>{
     private static int ident = 0;
+    private ArrayList<String> text = new ArrayList<>();
+    private boolean error = false;
+
+    public ArrayList<String> getText(){
+        return text;
+    }
+
+    public boolean isError(){
+        return error;
+    }
+
+    private void printError(int type, int line, String message){
+        error = true;
+        System.err.println("Error type " + type + " at Line " + line + ": " + message + ".");
+    }
+
+    private String getIdent(){
+        return "  ".repeat(Math.max(0, ident));
+    }
 
     private void printIdent() {
         for (int i = 0; i < ident; ++i)
@@ -63,8 +83,7 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
         String ruleName = SysYParser.ruleNames[ruleIndex];
         String name = ruleName.substring(0, 1).toUpperCase() + ruleName.substring(1);
 
-        printIdent();
-        System.err.println(name);
+        text.add(getIdent()+name+"\n");
 
         ident++;
         Void ret = super.visitChildren(node);
@@ -93,8 +112,7 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
             }
 
             if (!Objects.equals(color, "")) {
-                printIdent();
-                System.err.println(text + " " + ruleName + "[" + color + "]");
+                this.text.add(getIdent()+text+" "+ruleName+"["+color+"]"+"\n");
             }
         }
 
