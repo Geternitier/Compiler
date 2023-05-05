@@ -7,6 +7,14 @@ public class ArrayType implements Type{
         this.count = count;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
     @Override
     public String toString(){
         return "array("+type+")";

@@ -17,5 +17,4 @@ public class BasicSymbol implements Symbol{
         return type;
     }
 
-
 }
