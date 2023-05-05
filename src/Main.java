@@ -8,48 +8,12 @@ public class Main {
 
     public static SysYLexer lexer(String path) throws IOException{
         CharStream input = CharStreams.fromFileName(path);
-
-//        // SysYErrorListener
-//        SysYErrorListener listener = new SysYErrorListener();
-//        sysYLexer.removeErrorListeners();
-//        sysYLexer.addErrorListener(listener);
-//        List<? extends Token> tokens = sysYLexer.getAllTokens();
-//        if(listener.listen()){
-//            return sysYLexer;
-//        }
-//
-//        String[] rules = sysYLexer.getRuleNames();
-//
-//        for(Token token: tokens){
-//            int num = token.getType()-1;
-//            String text = token.getText();
-//            if (text.length() > 2 &&(text.startsWith("0x") || text.startsWith("0X"))) {
-//                text = String.valueOf(Integer.parseInt(text.substring(2), 16));
-//            }
-//            else if (text.length() > 1 && text.startsWith("0")) {
-//                text = String.valueOf(Integer.parseInt(text.substring(1), 8));
-//            }
-//            System.err.println(rules[num]+' '+text+" at Line "+token.getLine()+'.');
-//        }
         return new SysYLexer(input);
     }
 
     public static SysYParser parser(SysYLexer lexer){
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        SysYParser sysYParser = new SysYParser(tokens);
-        SysYParserErrorListener parserErrorListener = new SysYParserErrorListener();
-        sysYParser.removeErrorListeners();
-        sysYParser.addErrorListener(parserErrorListener);
-
-        SysYParser.ProgramContext tree = sysYParser.program();
-        if(parserErrorListener.listen()){
-            return sysYParser;
-        }
-
-        Visitor visitor = new Visitor();
-        visitor.visit(tree);
-
-        return sysYParser;
+        return new SysYParser(tokens);
     }
 
     public static void main(String[] args) throws IOException {
@@ -60,6 +24,10 @@ public class Main {
         String source = args[0];
         SysYLexer sysYLexer = lexer(source);
         SysYParser sysYParser = parser(sysYLexer);
+
+        SysYParser.ProgramContext tree = sysYParser.program();
+        Visitor visitor = new Visitor();
+        visitor.visit(tree);
 
     }
 
