@@ -1,3 +1,4 @@
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.RuleNode;
@@ -9,6 +10,8 @@ import java.util.Objects;
 public class Visitor extends SysYParserBaseVisitor<Void>{
     private static int ident = 0;
     private ArrayList<String> text = new ArrayList<>();
+    private Scope global;
+    private Scope current;
     private boolean error = false;
 
     public ArrayList<String> getText(){
@@ -26,11 +29,6 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
 
     private String getIdent(){
         return "  ".repeat(Math.max(0, ident));
-    }
-
-    private void printIdent() {
-        for (int i = 0; i < ident; ++i)
-            System.err.print("  ");
     }
 
     private String getColor(String ruleName){
@@ -75,6 +73,7 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
         }
     }
 
+    private int getLine(ParserRuleContext ctx){return ctx.getStart().getLine();}
 
     @Override
     public Void visitChildren(RuleNode node) {
@@ -97,25 +96,66 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
         Token token = node.getSymbol();
         int ruleNum = token.getType() - 1;
 
-        if (ruleNum >= 0) {
-            String ruleName = SysYLexer.ruleNames[ruleNum];
-            String text = token.getText();
-            String color = getColor(ruleName);
+        if(ruleNum < 0){
+            return super.visitTerminal(node);
+        }
 
-            if (Objects.equals(ruleName, "INTEGER_CONST")) {
-                if (text.length() > 2 &&(text.startsWith("0x") || text.startsWith("0X"))) {
-                    text = String.valueOf(Integer.parseInt(text.substring(2), 16));
-                }
-                else if (text.length() > 1 && text.startsWith("0")) {
-                    text = String.valueOf(Integer.parseInt(text.substring(1), 8));
-                }
+        String ruleName = SysYLexer.ruleNames[ruleNum];
+        String text = token.getText();
+        String color = getColor(ruleName);
+
+        if (Objects.equals(ruleName, "INTEGER_CONST")) {
+            if (text.length() > 2 &&(text.startsWith("0x") || text.startsWith("0X"))) {
+                text = String.valueOf(Integer.parseInt(text.substring(2), 16));
             }
-
-            if (!Objects.equals(color, "")) {
-                this.text.add(getIdent()+text+" "+ruleName+"["+color+"]"+"\n");
+            else if (text.length() > 1 && text.startsWith("0")) {
+                text = String.valueOf(Integer.parseInt(text.substring(1), 8));
             }
         }
 
+        if (!Objects.equals(color, "")) {
+            this.text.add(getIdent()+text+" "+ruleName+"["+color+"]"+"\n");
+        }
+
         return super.visitTerminal(node);
+    }
+
+    @Override
+    public Void visitProgram(SysYParser.ProgramContext ctx) {
+        global = new Scope("GlobalScope", null);
+        global.addSymbol(new BasicSymbol("int", new BasicType("int")));
+        global.addSymbol(new BasicSymbol("null", new BasicType("null")));
+        current = global;
+        Void ret = super.visitProgram(ctx);
+        current = current.getOuterScope();
+        return ret;
+    }
+
+    @Override
+    public Void visitFuncDef(SysYParser.FuncDefContext ctx) {
+        String funcName = ctx.IDENT().getText();
+        if(current.haveSymbol(funcName)){
+            printError(4, getLine(ctx), "函数重复定义: "+funcName);
+            return null;
+        }
+
+        Type retType = global.getSymbol(ctx.funcType().getText()).getType();
+        ArrayList<Type> paramsType = new ArrayList<>();
+        FunctionType functionType = new FunctionType(retType, paramsType);
+    }
+
+    @Override
+    public Void visitBlock(SysYParser.BlockContext ctx) {
+        return super.visitBlock(ctx);
+    }
+
+    @Override
+    public Void visitLVal(SysYParser.LValContext ctx) {
+        return super.visitLVal(ctx);
+    }
+
+    @Override
+    public Void visitStmt(SysYParser.StmtContext ctx) {
+        return super.visitStmt(ctx);
     }
 }
