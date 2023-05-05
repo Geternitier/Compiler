@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Scope {
-    private String name;
+    private final String name;
     private final Map<String, Symbol> symbolMap = new HashMap<>();
     private final Scope outerScope;
 
@@ -13,10 +13,6 @@ public class Scope {
 
     public String getName(){
         return name;
-    }
-
-    public Map<String, Symbol> getSymbolMap(){
-        return symbolMap;
     }
 
     public Scope getOuterScope() {

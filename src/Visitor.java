@@ -142,6 +142,9 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
         Type retType = global.getSymbol(ctx.funcType().getText()).getType();
         ArrayList<Type> paramsType = new ArrayList<>();
         FunctionType functionType = new FunctionType(retType, paramsType);
+
+        Void ret = super.visitFuncDef(ctx);
+        return ret;
     }
 
     @Override
