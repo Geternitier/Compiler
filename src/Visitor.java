@@ -116,7 +116,7 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
          *    | exp (PLUS | MINUS) exp
          *    ;
          */
-        if(ctx == null){}else if(ctx.L_PAREN() != null){
+        if(ctx.L_PAREN() != null){
             return getExpType(ctx.exp(0));
         } else if(ctx.lVal() != null){
             return getLValType(ctx.lVal());
