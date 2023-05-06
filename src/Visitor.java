@@ -207,7 +207,7 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
 
     @Override
     public Void visitProgram(SysYParser.ProgramContext ctx) {
-        global = new Scope("GlobalScope", null);
+        global = new Scope("Global", null);
         global.addSymbol(new BasicSymbol("int", new BasicType("int")));
         global.addSymbol(new BasicSymbol("void", new BasicType("void")));
         current = global;
