@@ -118,22 +118,7 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
          */
 //        if(ctx == null){
 //            return new BasicType("errorType");} else
-        if(ctx.L_PAREN() != null){
-            return getExpType(ctx.exp(0));
-        } else if(ctx.lVal() != null){
-            return getLValType(ctx.lVal());
-        } else if(ctx.number() != null){
-            return new BasicType("int");
-        } else if(ctx.unaryOp() != null){
-            return getExpType(ctx.exp(0));
-        } else if(ctx.MUL() != null || ctx.DIV() != null || ctx.MOD() != null ||
-                ctx.PLUS() != null || ctx.MINUS() != null){
-            Type op1 = getExpType(ctx.exp(0));
-            Type op2 = getExpType(ctx.exp(1));
-            if(op1.toString().equals("int") && op2.toString().equals("int")){
-                return op1;
-            }
-        } else if(ctx.IDENT() != null){
+        if(ctx.IDENT() != null){
             String funcName = ctx.IDENT().getText();
             Symbol symbol = current.getSymbol(funcName);
             if(symbol != null && symbol.getType() instanceof FunctionType){
@@ -148,6 +133,21 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
                 if(paramsType.equals(argsType)){
                     return functionType.getRetType();
                 }
+            }
+        } else if(ctx.L_PAREN() != null){
+            return getExpType(ctx.exp(0));
+        } else if(ctx.lVal() != null){
+            return getLValType(ctx.lVal());
+        } else if(ctx.number() != null){
+            return new BasicType("int");
+        } else if(ctx.unaryOp() != null){
+            return getExpType(ctx.exp(0));
+        } else if(ctx.MUL() != null || ctx.DIV() != null || ctx.MOD() != null ||
+                ctx.PLUS() != null || ctx.MINUS() != null){
+            Type op1 = getExpType(ctx.exp(0));
+            Type op2 = getExpType(ctx.exp(1));
+            if(op1.toString().equals("int") && op2.toString().equals("int")){
+                return op1;
             }
         }
 
