@@ -400,6 +400,31 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
         return super.visitStmt(ctx);
     }
 
+    private boolean checkParams(ArrayList<Type> params, ArrayList<Type> args){
+        for(Type type: params){
+            if(type.toString().equals("errorType")){
+                return true;
+            }
+        }
+        for(Type type: args){
+            if(type.toString().equals("errorType")){
+                return true;
+            }
+        }
+        if(params.size() != args.size()){
+            return false;
+        }
+
+        for(int i = 0;i < params.size();i++){
+            Type param = params.get(i);
+            Type arg = args.get(i);
+            if(!param.toString().equals(arg.toString())){
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public Void visitExp(SysYParser.ExpContext ctx) {
         if(ctx.IDENT() != null){
@@ -418,7 +443,7 @@ public class Visitor extends SysYParserBaseVisitor<Void>{
                         argsType.add(getExpType(paramContext.exp()));
                     }
                 }
-                if(!paramsType.equals(argsType)){
+                if(!checkParams(paramsType, argsType)){
                     printError(8, getLine(ctx), "函数参数不适用");
                 }
             }
