@@ -1,8 +1,11 @@
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.bytedeco.javacpp.BytePointer;
 
 import java.io.IOException;
+
+import static org.bytedeco.llvm.global.LLVM.*;
 
 public class Main {
 
@@ -17,23 +20,25 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length < 1) {
+        if (args.length < 2) {
             System.err.println("input path is required");
             return;
         }
-        String source = args[0];
-        SysYLexer sysYLexer = lexer(source);
+        SysYLexer sysYLexer = lexer(args[0]);
         SysYParser sysYParser = parser(sysYLexer);
 
         SysYParser.ProgramContext tree = sysYParser.program();
-        Visitor visitor = new Visitor();
+
+        LLVMVisitor visitor = new LLVMVisitor();
         visitor.visit(tree);
 
-        if(!visitor.isError()){
-            for (String s : visitor.getText()) {
-                System.err.print(s);
-            }
+        final BytePointer error = new BytePointer();
+
+        if (LLVMPrintModuleToFile(visitor.getModule(), args[1], error) != 0) {    // module是你自定义的LLVMModuleRef对象
+            LLVMDisposeMessage(error);
         }
+
+
     }
 
 }
