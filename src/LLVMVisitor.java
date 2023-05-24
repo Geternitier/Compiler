@@ -7,7 +7,7 @@ import org.bytedeco.llvm.LLVM.*;
 import static org.bytedeco.llvm.global.LLVM.*;
 
 public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
-    private final LLVMModuleRef module = LLVMModuleCreateWithName("moudle");
+    private final LLVMModuleRef module = LLVMModuleCreateWithName("module");
     private final LLVMBuilderRef builder = LLVMCreateBuilder();
     private final LLVMTypeRef i32Type = LLVMInt32Type();
     private final LLVMTypeRef voidType = LLVMVoidType();
@@ -302,8 +302,8 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
                 return LLVMBuildNeg(builder, exp, "tmp_");
             case "!":
                 if(LLVMConstIntGetZExtValue(exp) == 0){
-                    return LLVMConstInt(i32Type, 1, 1);
-                } else return LLVMConstInt(i32Type, 0, 1);
+                    return LLVMConstInt(i32Type, 1, 0);
+                } else return LLVMConstInt(i32Type, 0, 0);
         }
         return super.visitUnaryExp(ctx);
     }
@@ -344,7 +344,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
             LLVMValueRef[] valueRefs = new LLVMValueRef[2];
             valueRefs[0] = zero;
             valueRefs[1] = visit(ctx.exp(0));
-            return LLVMBuildGEP(builder, valueRef, new PointerPointer<>(valueRefs), 2, lName);
+            return LLVMBuildGEP(builder, valueRef, new PointerPointer<LLVMValueRef>(valueRefs), 2, lName);
         }
     }
 
