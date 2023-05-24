@@ -21,7 +21,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {
-            System.err.println("input path is required");
+            System.err.println("input and output path is required");
             return;
         }
         SysYLexer sysYLexer = lexer(args[0]);

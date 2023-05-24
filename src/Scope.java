@@ -1,14 +1,37 @@
+import org.bytedeco.llvm.LLVM.LLVMValueRef;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class Scope {
     private final String name;
-    private final Map<String, Symbol> symbolMap = new HashMap<>();
+    private final Map<String, LLVMValueRef> map = new HashMap<>();
     private final Scope outerScope;
 
     public Scope(String name, Scope outerScope){
         this.name = name;
         this.outerScope = outerScope;
+    }
+
+    public boolean containRef(String name){return map.containsKey(name);}
+
+    public Map<String, LLVMValueRef> getMap(){return map;}
+
+    public void addRef(String name, LLVMValueRef llvmValueRef){
+        map.put(name, llvmValueRef);
+    }
+
+    public LLVMValueRef find(String name){
+        LLVMValueRef ref = map.get(name);
+        if(ref != null){
+            return ref;
+        }
+
+        if(outerScope != null){
+            return outerScope.find(name);
+        }
+
+        return null;
     }
 
     public String getName(){
@@ -17,27 +40,6 @@ public class Scope {
 
     public Scope getOuterScope() {
         return outerScope;
-    }
-
-    public boolean haveSymbol(String name){
-        return symbolMap.containsKey(name);
-    }
-
-    public void addSymbol(Symbol symbol){
-        symbolMap.put(symbol.getName(), symbol);
-    }
-
-    public Symbol getSymbol(String name){
-        Symbol symbol = symbolMap.get(name);
-        if(symbol != null){
-            return symbol;
-        }
-
-        if(outerScope != null){
-            return outerScope.getSymbol(name);
-        }
-
-        return null;
     }
 
 }
