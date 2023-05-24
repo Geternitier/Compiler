@@ -163,9 +163,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
 
     @Override
     public LLVMValueRef visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
-        LLVMValueRef res = null;
-        if(ctx.exp() != null)
-               res = visit(ctx.exp());
+        LLVMValueRef res = visit(ctx.exp());
         return LLVMBuildRet(builder, res);
     }
 
@@ -257,16 +255,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     @Override
     public LLVMValueRef visitLVal(SysYParser.LValContext ctx) {
         String lName = ctx.IDENT().getText();
-        LLVMValueRef valueRef = scope.find(lName);
-        if(ctx.exp().size() == 0){
-            return valueRef;
-        } else {
-            lName += "[" + ctx.exp(0).getText() + "]";
-            LLVMValueRef[] valueRefs = new LLVMValueRef[2];
-            valueRefs[0] = zero;
-            valueRefs[1] = visit(ctx.exp(0));
-            return LLVMBuildGEP(builder, valueRef, new PointerPointer<LLVMValueRef>(valueRefs), 2, lName);
-        }
+        return scope.find(lName);
     }
 
     @Override

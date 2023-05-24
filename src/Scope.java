@@ -13,10 +13,6 @@ public class Scope {
         this.outerScope = outerScope;
     }
 
-    public boolean containRef(String name){return map.containsKey(name);}
-
-    public Map<String, LLVMValueRef> getMap(){return map;}
-
     public void addRef(String name, LLVMValueRef llvmValueRef){
         map.put(name, llvmValueRef);
     }
@@ -32,10 +28,6 @@ public class Scope {
         }
 
         return null;
-    }
-
-    public String getName(){
-        return name;
     }
 
     public Scope getOuterScope() {
