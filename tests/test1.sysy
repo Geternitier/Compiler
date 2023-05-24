@@ -1,7 +1,4 @@
-int g_var=2;
+const int x = 2;
 int main(){
-    int a = 1;
-    return a * g_var;
+    return x;
 }
-
-

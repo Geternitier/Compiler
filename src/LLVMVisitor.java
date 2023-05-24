@@ -102,6 +102,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
             if(scope == global){
                 LLVMSetInitializer(valueRef, initVal);
             } else LLVMBuildStore(builder, initVal, valueRef);
+            scope.addRef(text, valueRef);
         }
         return null;
     }
