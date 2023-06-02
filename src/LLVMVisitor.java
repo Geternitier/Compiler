@@ -171,7 +171,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     @Override
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
         LLVMValueRef cond = visit(ctx.cond());
-        LLVMValueRef cmp = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "tmp_");
+        LLVMValueRef cmp = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cmp_");
         LLVMBasicBlockRef trueBlock = LLVMAppendBasicBlock(function, "true");
         LLVMBasicBlockRef falseBlock = LLVMAppendBasicBlock(function, "false");
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, "entry");
@@ -202,7 +202,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
 
         LLVMPositionBuilderAtEnd(builder, whileCond);
         LLVMValueRef cond = visit(ctx.cond());
-        LLVMValueRef cmp = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "tmp_");
+        LLVMValueRef cmp = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cmp_");
         LLVMBuildCondBr(builder, cmp, whileBody, entry);
 
         LLVMPositionBuilderAtEnd(builder, whileBody);
@@ -285,7 +285,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
             case "+":
                 return exp;
             case "-":
-                return LLVMBuildNeg(builder, exp, "tmp_");
+                return LLVMBuildNeg(builder, exp, "neg_");
             case "!":
                 if(LLVMConstIntGetZExtValue(exp) == 0){
                     return LLVMConstInt(i32Type, 1, 0);
@@ -299,10 +299,10 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMValueRef ref1 = visit(ctx.exp(0));
         LLVMValueRef ref2 = visit(ctx.exp(1));
         if(ctx.MUL() != null){
-            return LLVMBuildMul(builder, ref1, ref2, "tmp_");
+            return LLVMBuildMul(builder, ref1, ref2, "mul_");
         } else if(ctx.DIV() != null){
-            return LLVMBuildSDiv(builder, ref1, ref2, "tmp_");
-        } else return LLVMBuildSRem(builder, ref1, ref2, "tmp_");
+            return LLVMBuildSDiv(builder, ref1, ref2, "div_");
+        } else return LLVMBuildSRem(builder, ref1, ref2, "rem_");
     }
 
     @Override
@@ -310,8 +310,8 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMValueRef ref1 = visit(ctx.exp(0));
         LLVMValueRef ref2 = visit(ctx.exp(1));
         if(ctx.PLUS() != null){
-            return LLVMBuildAdd(builder, ref1, ref2, "tmp_");
-        } else return LLVMBuildSub(builder, ref1, ref2, "tmp_");
+            return LLVMBuildAdd(builder, ref1, ref2, "add_");
+        } else return LLVMBuildSub(builder, ref1, ref2, "sub_");
     }
 
 /* cond
@@ -334,13 +334,13 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMValueRef rVal = visit(ctx.cond(1));
         LLVMValueRef res;
         if(ctx.LT() != null){
-            res = LLVMBuildICmp(builder, LLVMIntSLT, lVal, rVal, "tmp_");
+            res = LLVMBuildICmp(builder, LLVMIntSLT, lVal, rVal, "LT");
         } else if(ctx.GT() != null){
-            res = LLVMBuildICmp(builder, LLVMIntSGT, lVal, rVal, "tmp_");
+            res = LLVMBuildICmp(builder, LLVMIntSGT, lVal, rVal, "GT");
         } else if(ctx.LE() != null){
-            res = LLVMBuildICmp(builder, LLVMIntSLE, lVal, rVal, "tmp_");
+            res = LLVMBuildICmp(builder, LLVMIntSLE, lVal, rVal, "LE");
         } else {
-            res = LLVMBuildICmp(builder, LLVMIntSGE, lVal, rVal, "tmp_");
+            res = LLVMBuildICmp(builder, LLVMIntSGE, lVal, rVal, "GE");
         }
         return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
@@ -351,8 +351,8 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMValueRef rVal = visit(ctx.cond(1));
         LLVMValueRef res;
         if(ctx.EQ() != null){
-            res = LLVMBuildICmp(builder, LLVMIntEQ, lVal, rVal, "tmp_");
-        } else res = LLVMBuildICmp(builder, LLVMIntNE, lVal, rVal, "tmp_");
+            res = LLVMBuildICmp(builder, LLVMIntEQ, lVal, rVal, "EQ");
+        } else res = LLVMBuildICmp(builder, LLVMIntNE, lVal, rVal, "NEQ");
         return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
 
@@ -360,7 +360,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     public LLVMValueRef visitAndCond(SysYParser.AndCondContext ctx) {
         LLVMValueRef lVal = visit(ctx.cond(0));
         LLVMValueRef rVal = visit(ctx.cond(1));
-        LLVMValueRef res = LLVMBuildICmp(builder, LLVMAnd, lVal, rVal, "tmp_");
+        LLVMValueRef res = LLVMBuildICmp(builder, LLVMAnd, lVal, rVal, "AND");
         return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
 
@@ -368,7 +368,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     public LLVMValueRef visitOrCond(SysYParser.OrCondContext ctx) {
         LLVMValueRef lVal = visit(ctx.cond(0));
         LLVMValueRef rVal = visit(ctx.cond(1));
-        LLVMValueRef res = LLVMBuildICmp(builder, LLVMOr, lVal, rVal, "tmp_");
+        LLVMValueRef res = LLVMBuildICmp(builder, LLVMOr, lVal, rVal, "OR");
         return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
 
