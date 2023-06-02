@@ -74,6 +74,9 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, funcName + "Entry");
         LLVMPositionBuilderAtEnd(builder, entry);
 
+        scope.addRef(funcName, function);
+        scope = new Scope("function", scope);
+
         for(int i = 0;i < params;i++){
             SysYParser.FuncFParamContext funcFParamContext = ctx.funcFParams().funcFParam(i);
             LLVMTypeRef typeRef = getTypeRef(funcFParamContext.bType().getText());
@@ -85,8 +88,6 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         }
 
         isRet = false;
-        scope.addRef(funcName, function);
-        scope = new Scope("function", scope);
         super.visitFuncDef(ctx);
 
         if(!isRet){
