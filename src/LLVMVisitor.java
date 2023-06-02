@@ -209,7 +209,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         whileStack.push(whileCond);
         entryStack.push(entry);
         visit(ctx.stmt());
-        LLVMBuildBr(builder, entry);
+        LLVMBuildBr(builder, whileCond);
         whileStack.pop();
         entryStack.pop();
         LLVMBuildBr(builder, entry);
