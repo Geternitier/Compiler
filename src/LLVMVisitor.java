@@ -163,6 +163,16 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     }
 
     @Override
+    public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
+        return super.visitIfStmt(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
+        return super.visitWhileStmt(ctx);
+    }
+
+    @Override
     public LLVMValueRef visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
         LLVMValueRef res = visit(ctx.exp());
         return LLVMBuildRet(builder, res);
@@ -248,9 +258,38 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         } else return LLVMBuildSub(builder, ref1, ref2, "tmp_");
     }
 
+/* cond
+    : exp                                            # expCond
+    | cond (LT | GT | LE | GE) cond                  # compareCond
+    | cond (EQ | NEQ) cond                           # equalCond
+    | cond AND cond                                  # andCond
+    | cond OR cond                                   # orCond
+    ;
+*/
+
     @Override
     public LLVMValueRef visitExpCond(SysYParser.ExpCondContext ctx) {
         return visit(ctx.exp());
+    }
+
+    @Override
+    public LLVMValueRef visitCompareCond(SysYParser.CompareCondContext ctx) {
+        return super.visitCompareCond(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitEqualCond(SysYParser.EqualCondContext ctx) {
+        return super.visitEqualCond(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitAndCond(SysYParser.AndCondContext ctx) {
+        return super.visitAndCond(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitOrCond(SysYParser.OrCondContext ctx) {
+        return super.visitOrCond(ctx);
     }
 
     @Override
