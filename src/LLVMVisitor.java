@@ -193,11 +193,13 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMBasicBlockRef whileCond = LLVMAppendBasicBlock(function, "whileCondition");
         LLVMBasicBlockRef whileBody = LLVMAppendBasicBlock(function, "whileBody");
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, "entry");
+        LLVMBuildBr(builder, whileCond);
 
         LLVMPositionBuilderAtEnd(builder, whileCond);
         LLVMValueRef cond = visit(ctx.cond());
         LLVMValueRef cmp = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cmp_");
         LLVMBuildCondBr(builder, cmp, whileBody, entry);
+
         LLVMPositionBuilderAtEnd(builder, whileBody);
         visit(ctx.stmt());
         LLVMBuildBr(builder, entry);
@@ -320,7 +322,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         } else {
             res = LLVMBuildICmp(builder, LLVMIntSGE, lVal, rVal, "GE");
         }
-        return LLVMBuildZExt(builder, res, i32Type, "ext");
+        return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
 
     @Override
@@ -331,7 +333,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         if(ctx.EQ() != null){
             res = LLVMBuildICmp(builder, LLVMIntEQ, lVal, rVal, "EQ");
         } else res = LLVMBuildICmp(builder, LLVMIntNE, lVal, rVal, "NEQ");
-        return LLVMBuildZExt(builder, res, i32Type, "ext");
+        return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
 
     @Override
@@ -339,7 +341,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMValueRef lVal = visit(ctx.cond(0));
         LLVMValueRef rVal = visit(ctx.cond(1));
         LLVMValueRef res = LLVMBuildICmp(builder, LLVMAnd, lVal, rVal, "AND");
-        return LLVMBuildZExt(builder, res, i32Type, "ext");
+        return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
 
     @Override
@@ -347,7 +349,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMValueRef lVal = visit(ctx.cond(0));
         LLVMValueRef rVal = visit(ctx.cond(1));
         LLVMValueRef res = LLVMBuildICmp(builder, LLVMOr, lVal, rVal, "OR");
-        return LLVMBuildZExt(builder, res, i32Type, "ext");
+        return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
 
     @Override
