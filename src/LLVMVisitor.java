@@ -187,9 +187,23 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         return null;
     }
 
+    // WHILE L_PAREN cond R_PAREN stmt                # whileStmt
     @Override
     public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
-        return super.visitWhileStmt(ctx);
+        LLVMBasicBlockRef whileCond = LLVMAppendBasicBlock(function, "whileCondition");
+        LLVMBasicBlockRef whileBody = LLVMAppendBasicBlock(function, "whileBody");
+        LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, "entry");
+
+        LLVMPositionBuilderAtEnd(builder, whileCond);
+        LLVMValueRef cond = visit(ctx.cond());
+        LLVMValueRef cmp = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cmp_");
+        LLVMBuildCondBr(builder, cmp, whileBody, entry);
+        LLVMPositionBuilderAtEnd(builder, whileBody);
+        visit(ctx.stmt());
+        LLVMBuildBr(builder, entry);
+
+        LLVMPositionBuilderAtEnd(builder, entry);
+        return null;
     }
 
     @Override
