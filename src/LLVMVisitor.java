@@ -21,6 +21,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
 
     private final Stack<LLVMBasicBlockRef> whileStack = new Stack<>();
     private final Stack<LLVMBasicBlockRef> entryStack = new Stack<>();
+    private boolean isRet = false;
 
     public LLVMVisitor(){
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
@@ -83,10 +84,15 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
             LLVMBuildStore(builder, arg, valueRef);
         }
 
+        isRet = false;
         scope.addRef(funcName, function);
         scope = new Scope("function", scope);
         super.visitFuncDef(ctx);
 
+        if(!isRet){
+            LLVMBuildRet(builder, null);
+            isRet = false;
+        }
         return function;
     }
 
@@ -230,8 +236,12 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
 
     @Override
     public LLVMValueRef visitReturnStmt(SysYParser.ReturnStmtContext ctx) {
-        LLVMValueRef res = visit(ctx.exp());
-        return LLVMBuildRet(builder, res);
+        LLVMValueRef ret = null;
+        if(ctx.exp() != null){
+            ret = visit(ctx.exp());
+        }
+        isRet = true;
+        return LLVMBuildRet(builder, ret);
     }
 
 /* exp
