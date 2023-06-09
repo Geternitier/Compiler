@@ -15,4 +15,5 @@
 /gen
 nohup.out
 /tests/out.txt
+/tests/test1.sysy
 *.log
