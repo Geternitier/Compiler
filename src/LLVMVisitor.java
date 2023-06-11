@@ -398,7 +398,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMBasicBlockRef trueBlock = LLVMAppendBasicBlock(function, "true_");
         LLVMBasicBlockRef falseBlock = LLVMAppendBasicBlock(function, "false_");
         LLVMBasicBlockRef after = LLVMAppendBasicBlock(function, "after_");
-        LLVMValueRef res = LLVMBuildAlloca(builder, i32Type, "and_");
+        LLVMValueRef res = LLVMBuildAlloca(builder, i32Type, "or_");
         LLVMBuildStore(builder, lVal, res);
 
         LLVMBuildCondBr(builder, cmp, trueBlock, falseBlock);
