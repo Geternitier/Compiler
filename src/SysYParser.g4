@@ -9,7 +9,7 @@ program
    ;
 
 compUnit
-   : (funcDef | decl | stmt)+ EOF
+   : (funcDef | decl)+ EOF
    ;
 
 decl
