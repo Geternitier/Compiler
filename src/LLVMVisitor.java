@@ -4,6 +4,8 @@ import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.*;
 
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.Stack;
 
 import static org.bytedeco.llvm.global.LLVM.*;
@@ -14,6 +16,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     private final LLVMTypeRef i32Type = LLVMInt32Type();
     private final LLVMTypeRef voidType = LLVMVoidType();
     private final LLVMValueRef zero = LLVMConstInt(i32Type, 0, 0);
+    private final HashMap<String, String> retTypes = new HashMap<>();
 
     private final Scope global = new Scope("global", null);
     private Scope scope = null;
@@ -70,6 +73,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMTypeRef retType = getTypeRef(ctx.funcType().getText());
         LLVMTypeRef funcType = LLVMFunctionType(retType, types, params, 0);
         String funcName = ctx.IDENT().getText();
+        retTypes.put(funcName, ctx.funcType().getText());
         function = LLVMAddFunction(module, funcName, funcType);
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, funcName + "Entry");
         LLVMPositionBuilderAtEnd(builder, entry);
@@ -284,7 +288,11 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
                 args.put(i, visit(expContext));
             }
         }
-        return LLVMBuildCall(builder, func, args, count, "func_");
+        String name;
+        if(Objects.equals(retTypes.get(ctx.IDENT().getText()), "void")){
+            name = "";
+        } else name = "func_";
+        return LLVMBuildCall(builder, func, args, count, name);
     }
 
     @Override

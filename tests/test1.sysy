@@ -1,5 +1,5 @@
-int inc(){
-    return 1;
+void inc(){
+    return;
 }
 
 int main(){
