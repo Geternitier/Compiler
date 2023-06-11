@@ -284,7 +284,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
                 args.put(i, visit(expContext));
             }
         }
-        return LLVMBuildCall(builder, func, args, count, "");
+        return LLVMBuildCall(builder, func, args, count, "func_");
     }
 
     @Override
