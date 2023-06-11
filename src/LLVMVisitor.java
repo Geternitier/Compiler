@@ -93,6 +93,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
 
         isRet = false;
         super.visitFuncDef(ctx);
+        scope = scope.getOuterScope();
 
         if(!isRet){
             LLVMBuildRet(builder, null);

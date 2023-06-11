@@ -1,13 +1,14 @@
-void inc(){
-    return;
+int a, b=4;
+const int c = 4, d = 5;
+
+int f(){
+    a = 4;
+    return a;
 }
+int g(){a = 5;return b;}
 
 int main(){
-    int x = 1;
-    int y = 0;
-    int z = -1;
-    if(y < x || y > inc()){
-        return 1;
-    }
+    int x = f();
+    int y = g();
     return 0;
 }
