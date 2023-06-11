@@ -369,20 +369,30 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     @Override
     public LLVMValueRef visitAndCond(SysYParser.AndCondContext ctx) {
         LLVMValueRef lVal = visit(ctx.cond(0));
-        if(lVal.equals(zero)){
-            return LLVMBuildZExt(builder, lVal, i32Type, "tmp_");
-        }
+        LLVMValueRef cmp = LLVMBuildICmp(builder, LLVMIntEQ, zero, lVal, "cmp_");
+        LLVMBasicBlockRef trueBlock = LLVMAppendBasicBlock(function, "true_");
+        LLVMBasicBlockRef falseBlock = LLVMAppendBasicBlock(function, "false_");
+        LLVMBasicBlockRef after = LLVMAppendBasicBlock(function, "after_");
+        LLVMValueRef res = LLVMBuildAlloca(builder, i32Type, "and_");
+        LLVMBuildStore(builder, lVal, res);
+
+        LLVMBuildCondBr(builder, cmp, trueBlock, falseBlock);
+
+        LLVMPositionBuilderAtEnd(builder, trueBlock);
+        LLVMBuildBr(builder, after);
+
+        LLVMPositionBuilderAtEnd(builder, falseBlock);
         LLVMValueRef rVal = visit(ctx.cond(1));
-        LLVMValueRef res = LLVMBuildAnd(builder, lVal, rVal, "AND");
-        return LLVMBuildZExt(builder, res, i32Type, "tmp_");
+        LLVMBuildStore(builder, rVal, res);
+        LLVMBuildBr(builder, after);
+
+        LLVMPositionBuilderAtEnd(builder, after);
+        return res;
     }
 
     @Override
     public LLVMValueRef visitOrCond(SysYParser.OrCondContext ctx) {
         LLVMValueRef lVal = visit(ctx.cond(0));
-        if(!lVal.equals(zero)){
-            return LLVMBuildZExt(builder, lVal, i32Type, "tmp_");
-        }
         LLVMValueRef rVal = visit(ctx.cond(1));
         LLVMValueRef res = LLVMBuildOr(builder, lVal, rVal, "OR");
         return LLVMBuildZExt(builder, res, i32Type, "tmp_");
