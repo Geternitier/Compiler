@@ -394,8 +394,25 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     @Override
     public LLVMValueRef visitOrCond(SysYParser.OrCondContext ctx) {
         LLVMValueRef lVal = visit(ctx.cond(0));
+        LLVMValueRef cmp = LLVMBuildICmp(builder, LLVMIntNE, zero, lVal, "cmp_");
+        LLVMBasicBlockRef trueBlock = LLVMAppendBasicBlock(function, "true_");
+        LLVMBasicBlockRef falseBlock = LLVMAppendBasicBlock(function, "false_");
+        LLVMBasicBlockRef after = LLVMAppendBasicBlock(function, "after_");
+        LLVMValueRef res = LLVMBuildAlloca(builder, i32Type, "and_");
+        LLVMBuildStore(builder, lVal, res);
+
+        LLVMBuildCondBr(builder, cmp, trueBlock, falseBlock);
+
+        LLVMPositionBuilderAtEnd(builder, trueBlock);
+        LLVMBuildBr(builder, after);
+
+        LLVMPositionBuilderAtEnd(builder, falseBlock);
         LLVMValueRef rVal = visit(ctx.cond(1));
-        LLVMValueRef res = LLVMBuildOr(builder, lVal, rVal, "OR");
+        LLVMBuildStore(builder, rVal, res);
+        LLVMBuildBr(builder, after);
+
+        LLVMPositionBuilderAtEnd(builder, after);
+        res = LLVMBuildLoad(builder, res, "load_");
         return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
 
