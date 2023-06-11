@@ -369,6 +369,9 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     @Override
     public LLVMValueRef visitAndCond(SysYParser.AndCondContext ctx) {
         LLVMValueRef lVal = visit(ctx.cond(0));
+        if(lVal.equals(zero)){
+            return LLVMBuildZExt(builder, lVal, i32Type, "tmp_");
+        }
         LLVMValueRef rVal = visit(ctx.cond(1));
         LLVMValueRef res = LLVMBuildAnd(builder, lVal, rVal, "AND");
         return LLVMBuildZExt(builder, res, i32Type, "tmp_");
@@ -377,6 +380,9 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     @Override
     public LLVMValueRef visitOrCond(SysYParser.OrCondContext ctx) {
         LLVMValueRef lVal = visit(ctx.cond(0));
+        if(!lVal.equals(zero)){
+            return LLVMBuildZExt(builder, lVal, i32Type, "tmp_");
+        }
         LLVMValueRef rVal = visit(ctx.cond(1));
         LLVMValueRef res = LLVMBuildOr(builder, lVal, rVal, "OR");
         return LLVMBuildZExt(builder, res, i32Type, "tmp_");

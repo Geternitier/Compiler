@@ -1,11 +1,6 @@
-int a;
-a = 3;
-
-int f(){
-    a = 4;
-    return a;
-}
-
 int main(){
-    return a + f();
+    if(1 < 0 && 0 > 1){
+        return 1;
+    }
+    return 0;
 }
