@@ -387,7 +387,8 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMBuildBr(builder, after);
 
         LLVMPositionBuilderAtEnd(builder, after);
-        return res;
+        res = LLVMBuildLoad(builder, res, "load_");
+        return LLVMBuildZExt(builder, res, i32Type, "tmp_");
     }
 
     @Override
