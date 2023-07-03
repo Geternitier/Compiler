@@ -107,7 +107,9 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         scope = scope.getOuterScope();
 
         if(!isRet){
-            LLVMBuildRet(builder, null);
+            if(retType.equals(voidType))
+                LLVMBuildRet(builder, null);
+            else LLVMBuildRet(builder, zero);
             isRet = false;
         }
         return function;
