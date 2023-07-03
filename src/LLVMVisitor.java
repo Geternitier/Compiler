@@ -25,6 +25,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     private final Stack<LLVMBasicBlockRef> whileStack = new Stack<>();
     private final Stack<LLVMBasicBlockRef> entryStack = new Stack<>();
     private boolean isRet = false;
+    private boolean isArray = false;
 
     public LLVMVisitor(){
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
@@ -67,6 +68,11 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         for(int i = 0;i < params;i++){
             SysYParser.FuncFParamContext funcFParamContext = ctx.funcFParams().funcFParam(i);
             LLVMTypeRef typeRef = getTypeRef(funcFParamContext.bType().getText());
+
+            if(funcFParamContext.L_BRACKT().size() > 0){
+                typeRef = LLVMPointerType(typeRef, 0);
+            }
+
             types.put(i, typeRef);
         }
 
@@ -84,6 +90,11 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         for(int i = 0;i < params;i++){
             SysYParser.FuncFParamContext funcFParamContext = ctx.funcFParams().funcFParam(i);
             LLVMTypeRef typeRef = getTypeRef(funcFParamContext.bType().getText());
+
+            if(funcFParamContext.L_BRACKT().size() > 0){
+                typeRef = LLVMPointerType(typeRef, 0);
+            }
+
             String paramName = ctx.funcFParams().funcFParam(i).IDENT().getText();
             LLVMValueRef valueRef = LLVMBuildAlloca(builder, typeRef, paramName);
             scope.addRef(paramName, valueRef);
@@ -102,6 +113,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         return function;
     }
 
+    // TODO
     @Override
     public LLVMValueRef visitConstDecl(SysYParser.ConstDeclContext ctx) {
         String typeName = ctx.bType().getText();
@@ -109,6 +121,13 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         for(SysYParser.ConstDefContext constDefContext: ctx.constDef()){
             LLVMTypeRef typeRef = getTypeRef(typeName);
             String text = constDefContext.IDENT().getText();
+            int number = 0;
+
+            for(SysYParser.ConstExpContext constExpContext: constDefContext.constExp()){
+                number = Integer.parseInt(toDecimal(constExpContext.getText()));
+                typeRef = LLVMArrayType(typeRef, number);
+            }
+
             LLVMValueRef valueRef;
             if(scope == global){
                 valueRef = LLVMAddGlobal(module, typeRef, text);
@@ -116,15 +135,51 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
             } else valueRef = LLVMBuildAlloca(builder, typeRef, text);
 
             SysYParser.ConstExpContext constExpContext = constDefContext.constInitVal().constExp();
-            LLVMValueRef initVal = visit(constExpContext);
-            if(scope == global){
-                LLVMSetInitializer(valueRef, initVal);
-            } else LLVMBuildStore(builder, initVal, valueRef);
+            if(constExpContext != null){
+                LLVMValueRef initVal = visit(constExpContext);
+                if (scope == global) {
+                    LLVMSetInitializer(valueRef, initVal);
+                } else LLVMBuildStore(builder, initVal, valueRef);
+            } else {
+                int count = constDefContext.constInitVal().constInitVal().size();
+                if(scope == global){
+                    PointerPointer<Pointer> pointer = new PointerPointer<>(number);
+                    for(int i = 0;i < number;i++){
+                        if(i < count){
+                            pointer.put(i, visit(constDefContext.constInitVal().constInitVal(i).constExp()));
+                        } else {
+                            pointer.put(i, zero);
+                        }
+                    }
+                    LLVMValueRef initArray = LLVMConstArray(typeRef, pointer, number);
+                    LLVMSetInitializer(valueRef, initArray);
+                } else {
+                    LLVMValueRef[] initArray = new LLVMValueRef[number];
+                    for (int i = 0;i < number;i++) {
+                        if (i < count) {
+                            initArray[i] = visit(constDefContext.constInitVal().constInitVal(i).constExp());
+                        } else {
+                            initArray[i] = LLVMConstInt(i32Type, 0, 0);
+                        }
+                    }
+
+                    LLVMValueRef[] arrayPointer = new LLVMValueRef[2];
+                    arrayPointer[0] = zero;
+                    for (int i = 0; i < number; i++) {
+                        arrayPointer[1] = LLVMConstInt(i32Type, i, 0);
+                        PointerPointer<LLVMValueRef> indexPointer = new PointerPointer<>(arrayPointer);
+                        LLVMValueRef elementPtr = LLVMBuildGEP(builder, valueRef, indexPointer, 2, "pointer_" + i);
+                        LLVMBuildStore(builder, initArray[i], elementPtr);
+                    }
+                }
+            }
+
             scope.addRef(text, valueRef);
         }
         return null;
     }
 
+    // TODO
     @Override
     public LLVMValueRef visitVarDecl(SysYParser.VarDeclContext ctx) {
         String typeName = ctx.bType().getText();
@@ -132,21 +187,69 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         for (SysYParser.VarDefContext varDefContext : ctx.varDef()) {
             LLVMTypeRef typeRef = getTypeRef(typeName);
             String text = varDefContext.IDENT().getText();
-            LLVMValueRef valueRef;
+            int number = 0;
+            for(SysYParser.ConstExpContext constExpContext: varDefContext.constExp()){
+                number = Integer.parseInt(toDecimal(constExpContext.getText()));
+                typeRef = LLVMArrayType(typeRef, number);
+            }
 
+            LLVMValueRef valueRef;
             if (scope == global) {
                 valueRef = LLVMAddGlobal(module, typeRef, text);
-                LLVMSetInitializer(valueRef, zero);
+                if(number == 0){
+                    LLVMSetInitializer(valueRef, zero);
+                } else {
+                    PointerPointer<Pointer> pointer = new PointerPointer<>(number);
+                    for(int i = 0;i < number;i++){
+                        pointer.put(i, zero);
+                    }
+                    LLVMValueRef array = LLVMConstArray(typeRef, pointer, number);
+                    LLVMSetInitializer(valueRef, array);
+                }
             } else {
                 valueRef = LLVMBuildAlloca(builder, typeRef, text);
             }
 
             if (varDefContext.ASSIGN() != null) {
                 SysYParser.ExpContext expContext = varDefContext.initVal().exp();
-                LLVMValueRef initVal = visit(expContext);
-                if (scope == global) {
-                    LLVMSetInitializer(valueRef, initVal);
-                } else LLVMBuildStore(builder, initVal, valueRef);
+                if(expContext != null){
+                    LLVMValueRef initVal = visit(expContext);
+                    if(scope == global){
+                        LLVMSetInitializer(valueRef, initVal);
+                    } else LLVMBuildStore(builder, initVal, valueRef);
+                } else {
+                    int count = varDefContext.initVal().initVal().size();
+                    if(scope == global){
+                        PointerPointer<Pointer> pointer = new PointerPointer<>(number);
+                        for(int i = 0;i < number;i++){
+                            if(i < count){
+                                pointer.put(i, visit(varDefContext.initVal().initVal(i).exp()));
+                            } else {
+                                pointer.put(i, zero);
+                            }
+                        }
+                        LLVMValueRef initArray = LLVMConstArray(typeRef, pointer, number);
+                        LLVMSetInitializer(valueRef, initArray);
+                    } else {
+                        LLVMValueRef[] initArray = new LLVMValueRef[number];
+                        for (int i = 0;i < number;i++) {
+                            if (i < count) {
+                                initArray[i] = visit(varDefContext.initVal().initVal(i).exp());
+                            } else {
+                                initArray[i] = LLVMConstInt(i32Type, 0, 0);
+                            }
+                        }
+
+                        LLVMValueRef[] arrayPointer = new LLVMValueRef[2];
+                        arrayPointer[0] = zero;
+                        for (int i = 0; i < number; i++) {
+                            arrayPointer[1] = LLVMConstInt(i32Type, i, 0);
+                            PointerPointer<LLVMValueRef> indexPointer = new PointerPointer<>(arrayPointer);
+                            LLVMValueRef elementPtr = LLVMBuildGEP(builder, valueRef, indexPointer, 2, "pointer_" + i);
+                            LLVMBuildStore(builder, initArray[i], elementPtr);
+                        }
+                    }
+                }
             }
 
             scope.addRef(text, valueRef);
@@ -268,6 +371,10 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     @Override
     public LLVMValueRef visitLValExp(SysYParser.LValExpContext ctx) {
         LLVMValueRef lVal = visitLVal(ctx.lVal());
+        if(isArray){
+            isArray = false;
+            return lVal;
+        }
         return LLVMBuildLoad(builder, lVal, ctx.lVal().getText());
     }
 
