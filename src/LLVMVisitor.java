@@ -84,7 +84,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMBasicBlockRef entry = LLVMAppendBasicBlock(function, funcName + "Entry");
         LLVMPositionBuilderAtEnd(builder, entry);
 
-        scope.addRef(funcName, function);
+        scope.addRef(funcName, function, funcType);
         scope = new Scope("function", scope);
 
         for(int i = 0;i < params;i++){
@@ -97,7 +97,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
 
             String paramName = ctx.funcFParams().funcFParam(i).IDENT().getText();
             LLVMValueRef valueRef = LLVMBuildAlloca(builder, typeRef, paramName);
-            scope.addRef(paramName, valueRef);
+            scope.addRef(paramName, valueRef, typeRef);
             LLVMValueRef arg = LLVMGetParam(function, i);
             LLVMBuildStore(builder, arg, valueRef);
         }
@@ -174,7 +174,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
                 }
             }
 
-            scope.addRef(text, valueRef);
+            scope.addRef(text, valueRef, typeRef);
         }
         return null;
     }
@@ -252,7 +252,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
                 }
             }
 
-            scope.addRef(text, valueRef);
+            scope.addRef(text, valueRef, typeRef);
         }
 
         return null;
@@ -535,7 +535,32 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
     @Override
     public LLVMValueRef visitLVal(SysYParser.LValContext ctx) {
         String lName = ctx.IDENT().getText();
-        return scope.find(lName);
+        LLVMValueRef valueRef = scope.find(lName);
+        LLVMTypeRef typeRef = scope.getType(lName);
+        if(typeRef.equals(i32Type)){
+            return valueRef;
+        } else if(typeRef.equals(LLVMPointerType(i32Type, 0))){
+            if(ctx.exp().size() > 0){
+                LLVMValueRef[] pointer = new LLVMValueRef[1];
+                pointer[0] = visit(ctx.exp(0));
+                PointerPointer<LLVMValueRef> index = new PointerPointer<>(pointer);
+                LLVMValueRef p = LLVMBuildLoad(builder, valueRef, lName);
+                return LLVMBuildGEP(builder, p, index, 1, "pointer_"+lName);
+            } else {
+                return valueRef;
+            }
+        } else {
+            LLVMValueRef[] pointer = new LLVMValueRef[2];
+            pointer[0] = zero;
+            if(ctx.exp().size() > 0){
+                pointer[1] = visit(ctx.exp(0));
+            } else {
+                isArray = true;
+                pointer[1] = zero;
+            }
+            PointerPointer<LLVMValueRef> index = new PointerPointer<>(pointer);
+            return LLVMBuildGEP(builder, valueRef, index, 2, "pointer_"+lName);
+        }
     }
 
     @Override
