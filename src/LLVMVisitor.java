@@ -24,7 +24,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
 
     private final Stack<LLVMBasicBlockRef> whileStack = new Stack<>();
     private final Stack<LLVMBasicBlockRef> entryStack = new Stack<>();
-    private boolean isRet = false;
+//    private boolean isRet = false;
     private boolean isArray = false;
 
     public LLVMVisitor(){
@@ -350,7 +350,7 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         if(ctx.exp() != null){
             ret = visit(ctx.exp());
         }
-        isRet = true;
+//        isRet = true;
         return LLVMBuildRet(builder, ret);
     }
 
@@ -541,19 +541,17 @@ public class LLVMVisitor extends SysYParserBaseVisitor<LLVMValueRef>{
         LLVMTypeRef typeRef = scope.getType(lName);
         if(typeRef.equals(i32Type)){
             return valueRef;
-        }
-//        else if(typeRef.equals(LLVMPointerType(i32Type, 0))){
-//            if(ctx.exp().size() > 0){
-//                LLVMValueRef[] pointer = new LLVMValueRef[1];
-//                pointer[0] = visit(ctx.exp(0));
-//                PointerPointer<LLVMValueRef> index = new PointerPointer<>(pointer);
-//                LLVMValueRef p = LLVMBuildLoad(builder, valueRef, lName);
-//                return LLVMBuildGEP(builder, p, index, 1, "pointer_"+lName);
-//            } else {
-//                return valueRef;
-//            }
-//        }
-        else {
+        } else if(typeRef.equals(LLVMPointerType(i32Type, 0))){
+            if(ctx.exp().size() > 0){
+                LLVMValueRef[] pointer = new LLVMValueRef[1];
+                pointer[0] = visit(ctx.exp(0));
+                PointerPointer<LLVMValueRef> index = new PointerPointer<>(pointer);
+                LLVMValueRef p = LLVMBuildLoad(builder, valueRef, lName);
+                return LLVMBuildGEP(builder, p, index, 1, "pointer_"+lName);
+            } else {
+                return valueRef;
+            }
+        } else {
             LLVMValueRef[] pointer = new LLVMValueRef[2];
             pointer[0] = zero;
             if(ctx.exp().size() > 0){

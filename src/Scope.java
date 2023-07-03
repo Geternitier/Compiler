@@ -33,6 +33,10 @@ public class Scope {
         return null;
     }
 
+    public String getName(){
+        return name;
+    }
+
     public LLVMTypeRef getType(String name){
         LLVMTypeRef type = typeMap.get(name);
         if(type != null){
